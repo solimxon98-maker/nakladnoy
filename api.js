@@ -32,7 +32,8 @@ window.API = (function () {
     }
     return res.data.session;
   }
-  async function logout() { await sb.auth.signOut(); }
+  // Faqat shu qurilmadan chiqish (boshqa qurilmalardagi sessiyalar saqlanadi)
+  async function logout() { await sb.auth.signOut({ scope: "local" }); }
   async function session() { var r = await sb.auth.getSession(); return r.data.session; }
   async function myProfile() {
     var s = await session(); if (!s) return null;
@@ -83,8 +84,15 @@ window.API = (function () {
 
   // ---------- Agentlar (profillar) ----------
   async function profiles() { return check(await sb.from("profiles").select("*").order("role").order("full_name")); }
-  async function adminUsers(payload) {
+  async function adminUsers(payload, retried) {
     var res = await sb.functions.invoke("admin-users", { body: payload });
+    // Sessiya eskirgan bo'lsa — yangilab, bir marta qayta urinib ko'ramiz
+    if (res.error && !retried && res.response && res.response.status === 401) {
+      var ref = await sb.auth.refreshSession();
+      if (!ref.error) return adminUsers(payload, true);
+      await sb.auth.signOut({ scope: "local" });
+      throw new Error("Sessiya tugagan. Qaytadan kiring.");
+    }
     if (res.error) {
       var msg = res.error.message;
       try { var j = await res.error.context.json(); if (j && j.error) msg = j.error; } catch (e) {}
