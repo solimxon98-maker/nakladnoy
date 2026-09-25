@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nakladnoy · ТехноФарм</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=PT+Serif:wght@700&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ Yuklanmoqda ============ -->
+<div id="scrLoading" class="screen"><p class="note" style="padding-top:30vh;text-align:center">Yuklanmoqda…</p></div>
+
+<!-- ============ LOGIN ============ -->
+<section id="scrLogin" class="start" hidden aria-labelledby="loginTitle">
+  <div class="brand">ТехноФарм / Ас Сунна</div>
+  <h1 id="loginTitle">Накладная</h1>
+  <p class="lead">Login va parolingiz bilan kiring.</p>
+  <form id="loginForm" novalidate>
+    <div class="field" id="f-login">
+      <label for="loginInput">Login</label>
+      <input id="loginInput" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="masalan: otabek (admin — email)">
+      <span class="err" hidden>Loginni kiriting</span>
+    </div>
+    <div class="field" id="f-pass">
+      <label for="passInput">Parol</label>
+      <input id="passInput" type="password" autocomplete="current-password">
+      <span class="err" hidden>Parolni kiriting</span>
+    </div>
+    <p class="form-err" id="loginErr" role="alert"></p>
+    <button class="btn primary block" type="submit" id="loginBtn">Kirish</button>
+  </form>
+</section>
+
+<!-- ============ Yuqori panel (kirgandan keyin) ============ -->
+<header id="topbar" class="topbar" hidden>
+  <div class="logo">Накладная <small>ТехноФарм</small></div>
+  <div class="who"><span id="whoRole" class="pill muted"></span><b id="whoName"></b></div>
+  <button class="btn sm ghost" id="btnAdminPanel" type="button" hidden>Admin panel</button>
+  <button class="btn sm ghost" id="btnAgentHome" type="button" hidden>Nakladnoy yaratish</button>
+  <button class="btn sm" id="btnLogout" type="button">Chiqish</button>
+</header>
+
+<!-- ============ AGENT: bosh sahifa ============ -->
+<section id="scrHome" class="screen" hidden>
+  <div class="home-grid">
+    <div class="panel hero-card">
+      <h1>Yangi nakladnoy</h1>
+      <p>Klientni tanlang, mahsulotlar sonini kiriting va saqlang.</p>
+      <div class="stat-row">
+        <div class="stat"><div class="k">Klientlarim</div><div class="v num" id="homeClients">–</div></div>
+        <div class="stat"><div class="k">Bugun</div><div class="v num" id="homeToday">–</div></div>
+      </div>
+      <button class="btn primary block" id="btnNewInvoice" type="button">+ Yangi nakladnoy</button>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h2>Oxirgi nakladnoylarim</h2></div>
+      <div class="dt-wrap"><table class="dt stack"><thead><tr><th>№</th><th>Sana</th><th>Klient</th><th class="r">Summa</th></tr></thead>
+        <tbody id="homeInvoices"></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AGENT: klient tanlash ============ -->
+<section id="scrPick" class="screen" hidden>
+  <div class="panel pick">
+    <div class="panel-h"><h2>Klientni tanlang</h2></div>
+    <div class="panel-b">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="pickSearch" type="search" placeholder="Klient qidirish…" aria-label="Klient qidirish" autocomplete="off">
+      </div>
+    </div>
+    <div class="pick-list" id="pickList" role="listbox" aria-label="Klientlar"></div>
+    <div class="pick-foot">
+      <button class="btn ghost" id="pickBack" type="button">Orqaga</button>
+      <span class="form-err" id="pickErr" style="margin:0"></span>
+      <button class="btn primary" id="pickNext" type="button">Keyingi</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NAKLADNOY (oldingi ko'rinish saqlangan) ============ -->
+<div id="step2" hidden>
+  <article class="sheet">
+    <header class="doc-head">
+      <h2 class="doc-title">Накладная №<span class="blank" id="docNumber">______</span> от <span id="docDate" class="num"></span></h2>
+      <div class="parties">
+        <div><b>Кому:</b> <span id="outClient"></span></div>
+        <div class="r"><b>От:</b> <span id="outFrom"></span></div>
+        <div></div>
+        <div class="r"><b>ТП:</b> <span id="outAgent"></span></div>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="search" type="search" placeholder="Mahsulot qidirish…" aria-label="Mahsulot qidirish" autocomplete="off">
+      </div>
+      <label class="toggle"><input id="onlyFilled" type="checkbox"> Faqat tanlanganlar</label>
+    </div>
+
+    <div class="table-wrap">
+      <table class="inv">
+        <thead><tr>
+          <th class="c-no">№</th><th class="c-name">Наименование</th><th class="c-price">Цена</th><th class="c-qty">Количество</th><th class="c-sum">Сумма</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+        <tfoot><tr>
+          <td colspan="4" class="total-label">ИТОГО / ОБЩАЯ СУММА:</td>
+          <td class="total-val num" id="footTotal">0</td>
+        </tr></tfoot>
+      </table>
+      <div id="emptyMsg" class="empty" hidden>Hech narsa topilmadi.</div>
+    </div>
+  </article>
+
+  <div class="bar">
+    <div class="bar-in">
+      <div class="total-box">
+        <span class="lbl">Итого</span>
+        <span class="val num" id="barTotal">0 so'm</span>
+        <span class="meta" id="barMeta">Hali mahsulot tanlanmagan</span>
+      </div>
+      <div class="bar-actions" id="actions">
+        <button class="btn ghost" id="btnBack" type="button" title="Bosh sahifaga qaytish">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Yangi</button>
+        <button class="btn" id="btnCopy" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span class="lg">Summani </span>nusxalash</button>
+        <button class="btn primary" id="btnSave" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Saqlash</button>
+        <button class="btn primary" id="btnExcel" type="button" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg>Excel<span class="lg">&nbsp;yuklab olish</span></button>
+      </div>
+      <div class="confirm" id="confirmBox" hidden>
+        <span>Saqlanmagan ma'lumotlar o'chadi. Davom etasizmi?</span>
+        <button class="btn" id="btnNo" type="button">Yo'q</button>
+        <button class="btn primary" id="btnYes" type="button">Ha, chiqish</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADMIN PANEL ============ -->
+<section id="scrAdmin" class="screen" hidden>
+  <div class="panel">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="agents" aria-selected="true">Agentlar</button>
+      <button class="tab" role="tab" data-tab="clients" aria-selected="false">Klientlar</button>
+      <button class="tab" role="tab" data-tab="products" aria-selected="false">Mahsulotlar</button>
+      <button class="tab" role="tab" data-tab="invoices" aria-selected="false">Nakladnoylar</button>
+    </div>
+    <div id="adminBody"></div>
+  </div>
+</section>
+
+<div id="modalRoot"></div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+<script src="config.js"></script>
+<script src="util.js"></script>
+<script src="api.js"></script>
+<script src="excel.js"></script>
+<script src="invoice.js"></script>
+<script src="admin.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
