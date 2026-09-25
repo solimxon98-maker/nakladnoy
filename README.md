@@ -1,0 +1,2 @@
+# nakladnoy
+ТехноФарм nakladnoy tizimi
